@@ -1,0 +1,13 @@
+{
+  "name": "adacbrasil",
+  "version": "1.0.0",
+  "scripts": {
+    "prisma:generate": "cd server && npx prisma generate",
+    "dev:server": "npm run dev --prefix server",
+    "dev:client": "npm run dev --prefix client",
+    "start:backend": "npm run prisma:generate && npm run dev:server"
+  },
+  "dependencies": {
+    "concurrently": "^8.0.1"
+  }
+}

@@ -62,7 +62,7 @@ export const TarefaService = {
 
   async fetchUsuarios() {
     try {
-      const response = await fetch("http://localhost:3001/api/usuario");
+      const response = await fetch("http://localhost:3000/api/usuario");
       if (!response.ok) {
         throw new Error("Erro ao buscar usuários");
       }

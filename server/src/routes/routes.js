@@ -1,12 +1,12 @@
 import { Router } from "express";
 import { PetRoutes } from "./petsRoutes.js";
-import { AuthRoutes } from "../routes/authRoutes.js";
+import { AuthRoutes } from "./authRoutes.js";
 import { UsuariosRoutes } from './usuarioRoutes.js'
 import { TarefaRoutes } from './tarefaRoutes.js'
-import { FeedbackRoutes } from "../routes/feedbackRoutes.js";
-import { PatrocinioRoutes } from "../routes/patrocinioRoutes.js";
-import { adocaoRoutes } from "../routes/adocaoRoutes.js";
-import { EventoRoutes } from '../routes/eventosRoutes.js'
+import { FeedbackRoutes } from "./feedbackRoutes.js";
+import { PatrocinioRoutes } from "./patrocinioRoutes.js";
+import { adocaoRoutes } from "./adocaoRoutes.js";
+import { EventoRoutes } from './eventosRoutes.js'
 
 const routes = Router();
 

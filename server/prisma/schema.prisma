@@ -1,6 +1,5 @@
 generator client {
   provider = "prisma-client-js"
-  binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
 datasource db {
@@ -8,9 +7,53 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ENUMS
+enum StatusAdocao {
+  PENDENTE
+  APROVADA
+  RECUSADA
+  EM_ANDAMENTO
+}
+
+enum UsuarioTipo {
+  CLIENTE
+  VOLUNTARIO
+  ADMIN
+}
+
+enum tarefa_status {
+  BACKLOG
+  FAZER
+  ANDAMENTO
+  CONCLUIDO
+}
+
+enum TipoEvento {
+  Evento
+  Feira
+  Visita
+}
+
+// MODELS
+model Adocao {
+  id                    Int          @id @default(autoincrement())
+  data                  DateTime     @db.DateTime(3)
+  status                StatusAdocao
+  proximoAcompanhamento DateTime?
+  petId                 Int
+  usuarioId             Int
+  respostasFormulario   Json?        // Novo campo para armazenar as respostas do formulário
+
+  usuario usuario @relation("UsuarioAdocoes", fields: [usuarioId], references: [id])
+  pet     Pet     @relation("PetAdocoes", fields: [petId], references: [id])
+
+  @@index([petId], map: "Index_Adocao_PetId")
+  @@index([usuarioId], map: "Index_Adocao_UsuarioId")
+}
+
 model endereco {
   id          Int      @id @default(autoincrement())
-  cep         String   @db.VarChar(20)
+  cep         String    @db.VarChar(20)
   logradouro  String
   numero      String
   complemento String?
@@ -38,7 +81,7 @@ model tarefa {
   ordem          Int
   status         tarefa_status
   usuario_tarefa usuario_tarefa[]
-  pet            pet[]            @relation("pettotarefa")
+  pets           Pet[]
 
   @@map("tarefa")
 }
@@ -55,65 +98,13 @@ model usuario {
   resetToken       String           @default("") @db.VarChar(255)
   resetTokenExpiry DateTime         @default(now())
   tipo             UsuarioTipo      @default(CLIENTE)
-  adocao           adocao[]
+  adocao           Adocao[]         @relation("UsuarioAdocoes")
   endereco         endereco?
   infovoluntario   infovoluntario?
   usuario_tarefa   usuario_tarefa[]
 }
 
-model usuario_tarefa {
-  usuarioId Int
-  tarefaId  Int
-  tarefa    tarefa  @relation(fields: [tarefaId], references: [id], onDelete: Cascade, map: "Usuario_Tarefa_tarefaId_fkey")
-  usuario   usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade, map: "Usuario_Tarefa_usuarioId_fkey")
-
-  @@id([usuarioId, tarefaId])
-  @@index([tarefaId], map: "Usuario_Tarefa_tarefaId_fkey")
-}
-
-model feedback {
-  id     Int    @id @default(autoincrement())
-  text   String @db.Text
-  author String
-}
-
-model patrocinio {
-  id   Int    @id @default(autoincrement())
-  nome String
-  img  String
-}
-
-model adocao {
-  id                    Int           @id @default(autoincrement())
-  data                  DateTime
-  status                adocao_status
-  proximoAcompanhamento DateTime?
-  petId                 Int
-  usuarioId             Int
-  respostasFormulario   Json?
-  pet                   pet           @relation(fields: [petId], references: [id], map: "Adocao_petId_fkey")
-  usuario               usuario       @relation(fields: [usuarioId], references: [id], map: "Adocao_usuarioId_fkey")
-
-  @@index([petId], map: "Index_Adocao_PetId")
-  @@index([usuarioId], map: "Index_Adocao_UsuarioId")
-}
-
-model evento {
-  id                  Int               @id @default(autoincrement())
-  nome                String
-  data                DateTime
-  horaInicio          String?
-  horaFim             String?
-  tipoEvento          evento_tipoEvento @default(Visita)
-  descricao           String?
-  local               String?
-  organizador         String?
-  numeroParticipantes Int?
-  color               String?           @default("#e6f7ff")
-  url                 String?
-}
-
-model pet {
+model Pet {
   id                   Int       @id @default(autoincrement())
   nome                 String
   idade                Int
@@ -132,32 +123,43 @@ model pet {
   historico            String?
   conclusoes           String?
   exameClinico         String?
-  adocao               adocao[]
-  tarefa               tarefa[]  @relation("pettotarefa")
+
+  adocoes Adocao[] @relation("PetAdocoes")
+  tarefas tarefa[]
 }
 
-enum UsuarioTipo {
-  CLIENTE
-  VOLUNTARIO
-  ADMIN
+model usuario_tarefa {
+  usuarioId Int
+  tarefaId  Int
+  tarefa    tarefa  @relation(fields: [tarefaId], references: [id], map: "Usuario_Tarefa_tarefaId_fkey", onDelete: Cascade)
+  usuario   usuario @relation(fields: [usuarioId], references: [id], map: "Usuario_Tarefa_usuarioId_fkey", onDelete: Cascade)
+
+  @@id([usuarioId, tarefaId])
 }
 
-enum tarefa_status {
-  BACKLOG
-  FAZER
-  ANDAMENTO
-  CONCLUIDO
+model Evento {
+  id                  Int        @id @default(autoincrement())
+  nome                String
+  data                DateTime
+  horaInicio          String?
+  horaFim             String?
+  tipoEvento          TipoEvento @default(Visita)
+  descricao           String?
+  local               String?
+  organizador         String?
+  numeroParticipantes Int?
+  color               String?    @default("#e6f7ff")
+  url                 String?
 }
 
-enum adocao_status {
-  PENDENTE
-  APROVADA
-  RECUSADA
-  EM_ANDAMENTO
+model feedback {
+  id     Int    @id @default(autoincrement())
+  text   String @db.Text
+  author String
 }
 
-enum evento_tipoEvento {
-  Evento
-  Feira
-  Visita
+model patrocinio {
+  id   Int    @id @default(autoincrement())
+  nome String
+  img  String
 }
